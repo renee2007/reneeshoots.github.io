@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Reneesa — Photography</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #ffe8f2;
+      --surface: #ffc2d9;
+      --surface2: #ffa8c8;
+      --surface3: #ff8fb8;
+      --border: rgba(230,60,120,0.22);
+      --text: #3a1a28;
+      --muted: #c0406a;
+      --accent: #ff5c9a;
+      --accent-deep: #e8005a;
+      --accent-light: #ffb8d4;
+      --accent-dim: rgba(255,92,154,0.2);
+      --white: #fff2f7;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+
+    /* floating petals background animation */
+    .petal {
+      position: fixed;
+      pointer-events: none;
+      z-index: 0;
+      border-radius: 50% 0 50% 0;
+      opacity: 0;
+      animation: floatPetal linear infinite;
+    }
+
+    @keyframes floatPetal {
+      0%   { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+      5%   { opacity: 0.5; }
+      95%  { opacity: 0.3; }
+      100% { transform: translateY(-120px) rotate(720deg); opacity: 0; }
+    }
+
+    /* ── CURSOR ── */
+    * { cursor: none; }
+    #cursor {
+      position: fixed; top: 0; left: 0; z-index: 9999;
+      width: 28px; height: 26px;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      transition: transform 0.2s ease, opacity 0.2s;
+    }
+    #cursor svg { width: 100%; height: 100%; filter: drop-shadow(0 0 6px rgba(255,26,110,0.6)); }
+    #cursor.expand { transform: translate(-50%, -50%) scale(1.5); }
+    #cursor-ring {
+      position: fixed; top: 0; left: 0; z-index: 9998;
+      width: 44px; height: 44px;
+      border: 1.5px solid rgba(255,26,110,0.4);
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      transition: left 0.12s ease, top 0.12s ease, width 0.3s, height 0.3s, opacity 0.3s;
+      opacity: 0.5;
+    }
+    #cursor-ring.expand { width: 58px; height: 58px; opacity: 0.9; border-color: rgba(255,26,110,0.7); }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1.8rem 4rem;
+    }
+    nav::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom, rgba(255,240,245,0.97) 0%, transparent 100%);
+      pointer-events: none;
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem; letter-spacing: 0.1em;
+      color: var(--text); text-decoration: none; position: relative;
+    }
+    .nav-logo span { font-style: italic; color: var(--accent-deep); }
+    .nav-links { display: flex; gap: 2.5rem; position: relative; }
+    .nav-links a {
+      color: var(--muted); text-decoration: none;
+      font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase;
+      transition: color 0.3s; position: relative;
+    }
+    .nav-links a::after {
+      content: ''; position: absolute; bottom: -3px; left: 0; right: 0;
+      height: 1px; background: var(--accent-deep);
+      transform: scaleX(0); transform-origin: left;
+      transition: transform 0.3s ease;
+    }
+    .nav-links a:hover { color: var(--accent-deep); }
+    .nav-links a:hover::after { transform: scaleX(1); }
+
+    /* ── VIDEO HERO ── */
+    #hero {
+      height: 100vh;
+      position: relative; overflow: hidden;
+      display: flex; align-items: flex-end;
+    }
+
+    /* video background */
+    .hero-video-wrap {
+      position: absolute; inset: 0; z-index: 0;
+    }
+    .hero-video-wrap video {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    /* pink overlay on video */
+    .hero-video-wrap::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(
+        135deg,
+        rgba(240,122,160,0.55) 0%,
+        rgba(224,64,106,0.3) 40%,
+        rgba(58,26,40,0.5) 100%
+      );
+    }
+
+    /* animated pink gradient overlay (pulses) */
+    .hero-glow {
+      position: absolute; inset: 0; z-index: 1; pointer-events: none;
+      background: radial-gradient(ellipse at 30% 60%, rgba(255,182,212,0.35) 0%, transparent 60%);
+      animation: glowPulse 4s ease-in-out infinite;
+    }
+    @keyframes glowPulse {
+      0%, 100% { opacity: 0.6; transform: scale(1); }
+      50%       { opacity: 1;   transform: scale(1.08); }
+    }
+
+    .hero-content {
+      position: relative; z-index: 2;
+      padding: 0 5rem 6rem;
+      width: 100%;
+    }
+    .hero-eyebrow {
+      font-size: 0.65rem; letter-spacing: 0.4em; text-transform: uppercase;
+      color: #ff1a6e; margin-bottom: 1.5rem;
+      opacity: 0; animation: fadeUp 1s 0.4s forwards;
+      text-shadow: 0 0 20px rgba(255,26,110,0.4);
+    }
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(3.5rem, 7vw, 8rem);
+      font-weight: 300; line-height: 1; letter-spacing: -0.02em;
+      color: #fff; margin-bottom: 1.8rem;
+      opacity: 0; animation: fadeUp 1s 0.6s forwards;
+    }
+    .hero-title em { font-style: italic; color: #ff1a6e; text-shadow: 0 0 30px rgba(255,26,110,0.4); }
+    .hero-sub {
+      font-size: 0.82rem; letter-spacing: 0.08em; color: rgba(255,220,235,0.85);
+      line-height: 1.9; max-width: 420px; margin-bottom: 2rem;
+      opacity: 0; animation: fadeUp 1s 0.8s forwards;
+    }
+    .hero-tags {
+      display: flex; flex-wrap: wrap; gap: 0.6rem;
+      opacity: 0; animation: fadeUp 1s 1s forwards;
+    }
+    .hero-tag {
+      padding: 0.35rem 1.1rem;
+      border: 1px solid rgba(255,200,220,0.5); border-radius: 100px;
+      font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: rgba(255,220,235,0.9); background: rgba(255,182,212,0.12);
+      backdrop-filter: blur(4px);
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .hero-tag:hover { background: rgba(255,182,212,0.3); border-color: rgba(255,200,220,0.9); }
+
+    /* scroll indicator */
+    .hero-scroll-indicator {
+      position: absolute; bottom: 2.5rem; right: 4rem; z-index: 3;
+      display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+      opacity: 0; animation: fadeIn 1s 1.4s forwards;
+    }
+    .hero-scroll-indicator span {
+      font-size: 0.55rem; letter-spacing: 0.3em; text-transform: uppercase;
+      color: rgba(255,220,235,0.7); writing-mode: vertical-rl;
+    }
+    .scroll-line {
+      width: 1px; height: 60px; background: rgba(255,200,220,0.5);
+      position: relative; overflow: hidden;
+    }
+    .scroll-line::after {
+      content: ''; position: absolute; top: -100%; left: 0;
+      width: 100%; height: 100%;
+      background: #fff;
+      animation: scrollDrop 1.8s ease-in-out infinite;
+    }
+    @keyframes scrollDrop {
+      0%   { top: -100%; }
+      100% { top: 200%; }
+    }
+
+    /* ── SECTION HEADERS ── */
+    .section-header { display: flex; align-items: baseline; gap: 2rem; margin-bottom: 3rem; }
+    .section-label {
+      font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--accent-deep); white-space: nowrap;
+    }
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 3vw, 3rem); font-weight: 300; line-height: 1.15; color: var(--text);
+    }
+    .section-line { flex: 1; height: 1px; background: var(--border); }
+
+    /* ── CATEGORIES ── */
+    #categories {
+      padding: 8rem 4rem; position: relative; z-index: 1;
+      background: var(--bg);
+    }
+
+    /* animated blobs behind categories */
+    #categories::before {
+      content: ''; position: absolute; z-index: 0;
+      width: 500px; height: 500px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,160,200,0.3), transparent 70%);
+      top: 5rem; right: -100px;
+      animation: blobDrift 8s ease-in-out infinite;
+    }
+    @keyframes blobDrift {
+      0%, 100% { transform: translate(0,0) scale(1); }
+      50%       { transform: translate(-30px, 20px) scale(1.06); }
+    }
+
+    .categories-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; position: relative; z-index: 1; }
+
+    /* second row: 3 more */
+    .categories-grid-row2 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 12px; position: relative; z-index: 1; }
+
+    .category-card {
+      position: relative; overflow: hidden; border-radius: 14px;
+      background: var(--surface);
+    }
+    .category-card-tall { aspect-ratio: 3/4; }
+    .category-card-short { aspect-ratio: 4/3; }
+
+    .category-card::after {
+      content: ''; position: absolute; inset: 0; z-index: 1;
+      background: linear-gradient(to top, rgba(58,26,40,0.75) 0%, rgba(224,64,106,0.1) 60%, transparent 100%);
+      transition: opacity 0.5s;
+    }
+    .category-bg {
+      position: absolute; inset: 0; background-size: cover; background-position: center;
+      transition: transform 0.9s cubic-bezier(0.25,0.46,0.45,0.94), filter 0.5s;
+      filter: saturate(0.85) brightness(0.85);
+    }
+    .category-card:hover .category-bg { transform: scale(1.08); filter: saturate(1.1) brightness(0.95); }
+
+    /* shimmer on hover */
+    .category-card::before {
+      content: ''; position: absolute; inset: 0; z-index: 2;
+      background: linear-gradient(120deg, transparent 30%, rgba(255,200,220,0.18) 50%, transparent 70%);
+      transform: translateX(-100%);
+      transition: transform 0.6s ease;
+    }
+    .category-card:hover::before { transform: translateX(100%); }
+
+    .cat-lifestyle  { background-image: url('https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=700&q=80'); }
+    .cat-fineart    { background-image: url('https://images.unsplash.com/photo-1518098268026-4e89f1a2cd8e?w=700&q=80'); }
+    .cat-stilllife  { background-image: url('https://images.unsplash.com/photo-1490750967868-88df5691cc2e?w=700&q=80'); }
+    .cat-nature     { background-image: url('https://images.unsplash.com/photo-1474511320723-9a56873867b5?w=700&q=80'); }
+
+    .category-info {
+      position: absolute; bottom: 0; left: 0; right: 0; padding: 2rem 1.8rem; z-index: 3;
+      transform: translateY(6px); transition: transform 0.4s;
+    }
+    .category-card:hover .category-info { transform: translateY(0); }
+    .category-tag {
+      font-size: 0.58rem; letter-spacing: 0.25em; text-transform: uppercase;
+      color: var(--accent-light); margin-bottom: 0.4rem; opacity: 0.8;
+    }
+    .category-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem; font-weight: 300; color: #fff;
+    }
+
+    /* ── VIDEO SECTION ── */
+    #video-section {
+      padding: 0 4rem 8rem; position: relative; z-index: 1;
+    }
+    .video-section-inner {
+      position: relative; border-radius: 20px; overflow: hidden;
+      aspect-ratio: 16/7;
+    }
+    .video-section-inner video {
+      width: 100%; height: 100%; object-fit: cover;
+      border-radius: 20px;
+    }
+    .video-section-inner::after {
+      content: '';
+      position: absolute; inset: 0; border-radius: 20px;
+      background: linear-gradient(135deg, rgba(240,122,160,0.4) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .video-caption {
+      position: absolute; bottom: 2.5rem; left: 3rem; z-index: 2;
+    }
+    .video-caption p {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.5rem, 3vw, 2.8rem);
+      font-style: italic; font-weight: 300;
+      color: #fff; line-height: 1.2;
+    }
+    .video-caption span {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase;
+      color: rgba(255,220,235,0.7);
+    }
+
+    /* ── GALLERY ── */
+    #gallery { padding: 2rem 4rem 8rem; position: relative; z-index: 1; background: var(--white); }
+    .gallery-masonry { columns: 3; column-gap: 10px; }
+    .gallery-item {
+      break-inside: avoid; margin-bottom: 10px;
+      position: relative; overflow: hidden; border-radius: 12px;
+      background: var(--surface);
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+    }
+    .gallery-item:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 50px rgba(224,64,106,0.2);
+    }
+    .gallery-item img { width: 100%; display: block; transition: transform 0.7s cubic-bezier(0.25,0.46,0.45,0.94); }
+    .gallery-item:hover img { transform: scale(1.05); }
+    .gallery-item-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(240,122,160,0.45), rgba(224,64,106,0.3));
+      opacity: 0; transition: opacity 0.4s;
+      display: flex; align-items: center; justify-content: center; border-radius: 12px;
+    }
+    .gallery-item:hover .gallery-item-overlay { opacity: 1; }
+    .gallery-overlay-icon {
+      width: 50px; height: 50px; border: 1.5px solid #fff; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.15); backdrop-filter: blur(4px);
+      transform: scale(0.8); transition: transform 0.3s ease;
+    }
+    .gallery-item:hover .gallery-overlay-icon { transform: scale(1); }
+    .gallery-overlay-icon svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 1.5; }
+
+    /* ── MARQUEE STRIP ── */
+    .marquee-strip {
+      overflow: hidden; white-space: nowrap;
+      background: var(--accent-deep); padding: 1rem 0;
+      position: relative; z-index: 2;
+    }
+    .marquee-track {
+      display: inline-flex; gap: 3rem;
+      animation: marqueeScroll 18s linear infinite;
+    }
+    .marquee-item {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem; font-style: italic; font-weight: 300;
+      color: rgba(255,240,245,0.85); white-space: nowrap;
+    }
+    .marquee-dot { color: rgba(255,220,235,0.4); }
+    @keyframes marqueeScroll {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    /* ── ABOUT ── */
+    #about {
+      padding: 8rem 4rem; display: grid; grid-template-columns: 5fr 7fr; gap: 7rem;
+      border-top: 1px solid var(--border); position: relative; z-index: 1; background: var(--bg);
+    }
+    #about::before {
+      content: ''; position: absolute; z-index: 0;
+      width: 400px; height: 400px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,160,200,0.25), transparent 70%);
+      bottom: 2rem; left: -80px;
+      animation: blobDrift 10s ease-in-out infinite reverse;
+    }
+    .about-image-wrap { position: relative; z-index: 1; }
+    .about-img { width: 100%; aspect-ratio: 4/5; object-fit: cover; border-radius: 18px; }
+    /* animated pink ring */
+    .about-img-ring {
+      position: absolute; top: -16px; left: -16px; right: -16px; bottom: -16px;
+      border-radius: 24px;
+      border: 1.5px solid var(--accent);
+      z-index: -1;
+      animation: ringPulse 3s ease-in-out infinite;
+    }
+    @keyframes ringPulse {
+      0%, 100% { opacity: 0.4; transform: scale(1); }
+      50%       { opacity: 0.8; transform: scale(1.015); }
+    }
+    .about-img-blob {
+      position: absolute; bottom: -2.5rem; right: -2.5rem;
+      width: 55%; aspect-ratio: 1; border-radius: 50%;
+      background: var(--surface2); z-index: -2;
+    }
+    .about-content { display: flex; flex-direction: column; justify-content: center; position: relative; z-index: 1; }
+    .about-name {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 3vw, 3.2rem); font-weight: 300; line-height: 1.1; margin-bottom: 2rem;
+    }
+    .about-name em { font-style: italic; color: var(--accent-deep); }
+    .about-body { font-size: 0.82rem; line-height: 2.15; color: var(--muted); margin-bottom: 1.4rem; }
+    .about-body strong { color: var(--text); font-weight: 400; }
+
+    /* ── CONTACT ── */
+    #contact {
+      padding: 8rem 4rem; text-align: center;
+      background: linear-gradient(160deg, var(--surface) 0%, var(--surface2) 50%, var(--surface3) 100%);
+      border-top: 1px solid var(--border); position: relative; z-index: 1; overflow: hidden;
+    }
+    #contact::before, #contact::after {
+      content: ''; position: absolute; border-radius: 50%; pointer-events: none;
+    }
+    #contact::before {
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(255,255,255,0.4), transparent 70%);
+      top: -200px; left: 50%; transform: translateX(-50%);
+    }
+    #contact::after {
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(255,160,200,0.3), transparent 70%);
+      bottom: -100px; right: 10%;
+    }
+    .contact-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.5rem, 5.5vw, 6rem); font-weight: 300; line-height: 1.1;
+      margin-bottom: 1.5rem; position: relative; z-index: 1;
+      animation: fadeUp 0.8s both;
+    }
+    .contact-title em { font-style: italic; color: var(--accent-deep); }
+    .contact-sub { font-size: 0.75rem; letter-spacing: 0.12em; color: var(--muted); margin-bottom: 3rem; position: relative; z-index: 1; }
+    .contact-email {
+      display: inline-block; font-family: 'Playfair Display', serif;
+      font-size: 1.5rem; font-style: italic; color: var(--text); text-decoration: none;
+      border-bottom: 1.5px solid var(--accent-deep); padding-bottom: 0.3rem;
+      transition: color 0.3s, letter-spacing 0.3s; position: relative; z-index: 1;
+    }
+    .contact-email:hover { color: var(--accent-deep); letter-spacing: 0.05em; }
+    .contact-socials { margin-top: 3rem; display: flex; justify-content: center; gap: 3rem; position: relative; z-index: 1; }
+    .contact-socials a {
+      font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase;
+      color: var(--muted); text-decoration: none; transition: color 0.3s, transform 0.3s;
+      display: inline-block;
+    }
+    .contact-socials a:hover { color: var(--accent-deep); transform: translateY(-3px); }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 2rem 4rem; display: flex; justify-content: space-between; align-items: center;
+      background: var(--white); border-top: 1px solid var(--border);
+    }
+    .footer-copy { font-size: 0.65rem; letter-spacing: 0.15em; color: var(--muted); }
+
+    /* ── LIGHTBOX ── */
+    #lightbox {
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(58,26,40,0.93);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.4s; backdrop-filter: blur(10px);
+    }
+    #lightbox.open { opacity: 1; pointer-events: all; }
+    #lightbox img { max-width: 90vw; max-height: 90vh; object-fit: contain; border-radius: 12px; }
+    #lightbox-close {
+      position: absolute; top: 2rem; right: 2rem; width: 48px; height: 48px;
+      border: 1px solid rgba(255,255,255,0.25); border-radius: 50%; background: none;
+      color: rgba(255,255,255,0.6); font-size: 1rem;
+      display: flex; align-items: center; justify-content: center; transition: border-color 0.3s, color 0.3s;
+    }
+    #lightbox-close:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(25px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes growLine { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      nav { padding: 1.5rem 2rem; }
+      .hero-content { padding: 0 2rem 5rem; }
+      #categories { padding: 5rem 2rem; }
+      .categories-grid, .categories-grid-row2 { grid-template-columns: 1fr 1fr; }
+      #video-section { padding: 0 2rem 5rem; }
+      #gallery { padding: 2rem 2rem 5rem; }
+      .gallery-masonry { columns: 2; }
+      #about { grid-template-columns: 1fr; gap: 3rem; padding: 5rem 2rem; }
+      .about-img-blob { display: none; }
+      #contact { padding: 5rem 2rem; }
+      footer { padding: 2rem; flex-direction: column; gap: 1rem; text-align: center; }
+    }
+    @media (max-width: 600px) {
+      .categories-grid, .categories-grid-row2 { grid-template-columns: 1fr; }
+      .gallery-masonry { columns: 1; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- floating petals (created by JS) -->
+<div id="cursor">
+  <svg viewBox="0 0 32 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M16 27S2 18.5 2 9.5A7.5 7.5 0 0 1 16 5.68 7.5 7.5 0 0 1 30 9.5C30 18.5 16 27 16 27Z" fill="#ff1a6e" stroke="#fff" stroke-width="1.5"/>
+  </svg>
+</div>
+<div id="cursor-ring"></div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox">
+  <button id="lightbox-close">✕</button>
+  <img id="lightbox-img" src="" alt=""/>
+</div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Renee<span>shoots</span></a>
+  <div class="nav-links">
+    <a href="#categories">Work</a>
+    <a href="#gallery">Gallery</a>
+    <a href="#about">About</a>
+    <a href="#contact">Contact</a>
+  </div>
+</nav>
+
+<!-- ═══ VIDEO HERO ═══ -->
+<section id="hero">
+  <div class="hero-video-wrap">
+    <!--
+      ★ TO ADD YOUR OWN VIDEO:
+         Replace the src below with your video file, e.g.:
+         <source src="videos/reneesa-reel.mp4" type="video/mp4">
+
+      Until then this uses a free stock video as placeholder.
+    -->
+    <video autoplay muted loop playsinline poster="https://images.unsplash.com/photo-1490750967868-88df5691cc2e?w=1600&q=80">
+      <source src="https://videos.pexels.com/video-files/856974/856974-hd_1920_1080_25fps.mp4" type="video/mp4"/>
+    </video>
+  </div>
+  <div class="hero-glow"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">Photographer · Based in Bengaluru</p>
+    <h1 class="hero-title">Finding<br><em>beauty</em><br>in the still</h1>
+    <p class="hero-sub">Lifestyle, fine art, still life, nature — every frame a quiet moment worth keeping.</p>
+    <div class="hero-tags">
+      <span class="hero-tag">Lifestyle</span>
+      <span class="hero-tag">Fine Art</span>
+      <span class="hero-tag">Still Life</span>
+      <span class="hero-tag">Nature</span>
+    </div>
+  </div>
+  <div class="hero-scroll-indicator">
+    <div class="scroll-line"></div>
+    <span>Scroll</span>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-strip" aria-hidden="true">
+  <div class="marquee-track">
+    <span class="marquee-item">Lifestyle</span><span class="marquee-dot">✦</span>
+    <span class="marquee-item">Fine Art</span><span class="marquee-dot">✦</span>
+    <span class="marquee-item">Still Life</span><span class="marquee-dot">✦</span>
+    <span class="marquee-item">Nature</span><span class="marquee-dot">✦</span>
+    <span class="marquee-item">Lifestyle</span><span class="marquee-dot">✦</span>
+    <span class="marquee-item">Fine Art</span><span class="marquee-dot">✦</span>
+    <span class="marquee-item">Still Life</span><span class="marquee-dot">✦</span>
+    <span class="marquee-item">Nature</span><span class="marquee-dot">✦</span>
+    <span class="marquee-item">Lifestyle</span><span class="marquee-dot">✦</span>
+    <span class="marquee-item">Fine Art</span><span class="marquee-dot">✦</span>
+    <span class="marquee-item">Still Life</span><span class="marquee-dot">✦</span>
+    <span class="marquee-item">Nature</span><span class="marquee-dot">✦</span>
+  </div>
+</div>
+
+<!-- CATEGORIES -->
+<section id="categories">
+  <div class="section-header">
+    <span class="section-label">02 — Work</span>
+    <h2 class="section-title">Explore by genre</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="categories-grid" style="grid-template-columns: repeat(2,1fr);">
+    <div class="category-card category-card-tall">
+      <div class="category-bg cat-lifestyle"></div>
+      <div class="category-info"><p class="category-tag">— Series</p><h3 class="category-name">Lifestyle</h3></div>
+    </div>
+    <div class="category-card category-card-tall">
+      <div class="category-bg cat-fineart"></div>
+      <div class="category-info"><p class="category-tag">— Series</p><h3 class="category-name">Fine Art</h3></div>
+    </div>
+  </div>
+  <div class="categories-grid-row2" style="grid-template-columns: repeat(2,1fr);">
+    <div class="category-card category-card-short">
+      <div class="category-bg cat-stilllife"></div>
+      <div class="category-info"><p class="category-tag">— Series</p><h3 class="category-name">Still Life</h3></div>
+    </div>
+    <div class="category-card category-card-short">
+      <div class="category-bg cat-nature"></div>
+      <div class="category-info"><p class="category-tag">— Series</p><h3 class="category-name">Nature</h3></div>
+    </div>
+  </div>
+</section>
+
+<!-- INLINE VIDEO SECTION -->
+<section id="video-section">
+  <div class="section-header" style="padding: 0 0 1rem">
+    <span class="section-label">03 — Motion</span>
+    <h2 class="section-title">In motion</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="video-section-inner">
+    <!--
+      ★ TO ADD YOUR OWN VIDEO here too, replace the src:
+         <source src="videos/my-footage.mp4" type="video/mp4">
+    -->
+    <video autoplay muted loop playsinline>
+      <source src="https://videos.pexels.com/video-files/3571264/3571264-uhd_2560_1440_30fps.mp4" type="video/mp4"/>
+    </video>
+    <div class="video-caption">
+      <span>Behind the lens</span>
+      <p>Light finds<br><em>everything.</em></p>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section id="gallery">
+  <div class="section-header">
+    <span class="section-label">04 — Gallery</span>
+    <h2 class="section-title">Selected frames</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="gallery-masonry">
+    <!-- Replace src with your own photos e.g. src="photos/lifestyle-01.jpg" -->
+    <div class="gallery-item" data-src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1200&q=90">
+      <img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600&q=80" alt="Lifestyle" loading="lazy"/>
+      <div class="gallery-item-overlay"><div class="gallery-overlay-icon"><svg viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></div></div>
+    </div>
+    <div class="gallery-item" data-src="https://images.unsplash.com/photo-1474511320723-9a56873867b5?w=1200&q=90">
+      <img src="https://images.unsplash.com/photo-1474511320723-9a56873867b5?w=600&q=80" alt="Nature" loading="lazy"/>
+      <div class="gallery-item-overlay"><div class="gallery-overlay-icon"><svg viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></div></div>
+    </div>
+    <div class="gallery-item" data-src="https://images.unsplash.com/photo-1518098268026-4e89f1a2cd8e?w=1200&q=90">
+      <img src="https://images.unsplash.com/photo-1518098268026-4e89f1a2cd8e?w=600&q=80" alt="Fine Art" loading="lazy"/>
+      <div class="gallery-item-overlay"><div class="gallery-overlay-icon"><svg viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></div></div>
+    </div>
+    <div class="gallery-item" data-src="https://images.unsplash.com/photo-1490750967868-88df5691cc2e?w=1200&q=90">
+      <img src="https://images.unsplash.com/photo-1490750967868-88df5691cc2e?w=600&q=80" alt="Still Life" loading="lazy"/>
+      <div class="gallery-item-overlay"><div class="gallery-overlay-icon"><svg viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-image-wrap">
+    <!-- Replace: src="photos/reneesa.jpg" -->
+    <img class="about-img" src="https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=800&q=80" alt="Reneesa"/>
+    <div class="about-img-ring"></div>
+    <div class="about-img-blob"></div>
+  </div>
+  <div class="about-content">
+    <div class="section-header" style="margin-bottom:1.5rem">
+      <span class="section-label">05 — About</span>
+    </div>
+    <h2 class="about-name">Hi, I'm <em>Reneesa.</em></h2>
+    <p class="about-body">
+      Photography has been a part of my life for as long as I can remember. Growing up, my dad was always the one behind the camera, capturing the smallest moments and turning them into memories. I think that's where it all began for me. I didn't realize it at the time, but I was slowly learning to see the world the way he did.
+    </p>
+    <p class="about-body">
+      I started taking photos at a young age, but it only became something real to me in 8th grade, when I got my first camera. That's when I began to understand that photography wasn't just about pictures. It was about <strong>noticing things</strong>. Light falling in a certain way, quiet moments, little details that most people overlook.
+    </p>
+    <p class="about-body">
+      I've never really been good with words. I don't always know how to explain what I feel, and maybe that's why I hold on to photography so tightly. It gives me a way to <strong>express things I can't say out loud</strong>. It lets me turn feelings into something I can keep.
+    </p>
+    <p class="about-body">
+      I'm drawn to aesthetics in a way I can't fully explain. Soft light, still moments, the kind of scenes that feel calm but emotional at the same time. I like capturing things the way they <em style="font-family:'Playfair Display',serif;font-style:italic;color:var(--accent-deep)">felt</em> in that exact moment, not just the way they looked.
+    </p>
+    <p class="about-body" style="color:var(--text)">
+      To me, photography is not just about taking pictures. It's about <strong>holding on to something before it disappears.</strong>
+    </p>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <h2 class="contact-title">Say <em>hello</em></h2>
+  <p class="contact-sub">Open to collaborations, commissions & conversations</p>
+  <a class="contact-email" href="mailto:hello@reneesa.com">hello@reneesa.com</a>
+  <div class="contact-socials">
+    <a href="#">Instagram</a>
+    <a href="#">VSCO</a>
+    <a href="#">Pinterest</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span class="footer-copy">© 2026 Reneesa. All rights reserved.</span>
+  <span style="color:var(--accent);font-size:1.3rem">✿</span>
+</footer>
+
+<script>
+  // ── CURSOR ──
+  const cursor = document.getElementById('cursor');
+  const ring   = document.getElementById('cursor-ring');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  function animRing() {
+    rx += (mx - rx) * 0.12;
+    ry += (my - ry) * 0.12;
+    cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+    ring.style.left   = rx + 'px'; ring.style.top  = ry + 'px';
+    requestAnimationFrame(animRing);
+  }
+  animRing();
+  document.querySelectorAll('a, button, .gallery-item, .category-card, .hero-tag').forEach(el => {
+    el.addEventListener('mouseenter', () => { cursor.classList.add('expand'); ring.classList.add('expand'); });
+    el.addEventListener('mouseleave', () => { cursor.classList.remove('expand'); ring.classList.remove('expand'); });
+  });
+
+  // ── FLOATING PETALS ──
+  const petalColors = ['#ffb6c8','#ffd6e7','#f07aa0','#ffaac0','#ffc0d0'];
+  function spawnPetal() {
+    const p = document.createElement('div');
+    p.classList.add('petal');
+    const size = 8 + Math.random() * 14;
+    p.style.cssText = `
+      width:${size}px; height:${size}px;
+      left:${Math.random()*100}vw;
+      bottom:-20px;
+      background:${petalColors[Math.floor(Math.random()*petalColors.length)]};
+      animation-duration:${6 + Math.random()*8}s;
+      animation-delay:${Math.random()*4}s;
+      transform:rotate(${Math.random()*360}deg);
+    `;
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 14000);
+  }
+  setInterval(spawnPetal, 600);
+
+  // ── LIGHTBOX ──
+  const lightbox = document.getElementById('lightbox');
+  const lbImg    = document.getElementById('lightbox-img');
+  document.querySelectorAll('.gallery-item').forEach(item => {
+    item.addEventListener('click', () => { lbImg.src = item.dataset.src; lightbox.classList.add('open'); });
+  });
+  document.getElementById('lightbox-close').addEventListener('click', () => lightbox.classList.remove('open'));
+  lightbox.addEventListener('click', e => { if (e.target === lightbox) lightbox.classList.remove('open'); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') lightbox.classList.remove('open'); });
+
+  // ── SCROLL REVEAL ──
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.style.opacity='1'; e.target.style.transform='translateY(0)'; }
+    });
+  }, { threshold: 0.07 });
+  document.querySelectorAll('.category-card, .gallery-item, .about-content, .about-image-wrap, .video-section-inner').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(30px)';
+    el.style.transition = 'opacity 0.9s ease, transform 0.9s ease';
+    obs.observe(el);
+  });
+
+  // staggered category cards
+  document.querySelectorAll('.category-card').forEach((el, i) => {
+    el.style.transitionDelay = (i * 0.08) + 's';
+  });
+</script>
+</body>
+</html>
